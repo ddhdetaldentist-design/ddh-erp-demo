@@ -3,9 +3,6 @@ import type { NextAuthConfig } from "next-auth";
 export const authConfig: NextAuthConfig = {
   trustHost: true,
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "ddh-dental-demo-secret-key-2026-interactive",
-  ...(process.env.AUTH_URL || process.env.NEXTAUTH_URL
-    ? { basePath: "/api/auth" }
-    : {}),
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",

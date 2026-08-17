@@ -178,21 +178,32 @@ function _buildPermissions(dbUser: DbUserWithRole): UserPermissions {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  // NextAuth v5 reads AUTH_SECRET; older versions use NEXTAUTH_SECRET
-  // Provide both to ensure Vercel deployment works
+  trustHost: true,
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "ddh-dental-demo-secret-key-2026-interactive",
   providers: [
     Credentials({
+      id: "credentials",
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
+        const normalizedEmail = email.trim().toLowerCase();
 
-        const user = await prisma.user.findUnique({
-          where: { email, isActive: true },
-          include: { rolePermission: true },
-        });
+        const user =
+          (await prisma.user.findFirst({
+            where: { email: { equals: normalizedEmail, mode: "insensitive" }, isActive: true },
+            include: { rolePermission: true },
+          })) ||
+          (await prisma.user.findFirst({
+            where: { email: normalizedEmail },
+            include: { rolePermission: true },
+          }));
 
         if (!user) return null;
 
