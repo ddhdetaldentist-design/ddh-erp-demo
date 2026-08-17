@@ -1,0 +1,338 @@
+// DDH Dental Lab ERP — Prisma Schema
+// Supports both Supabase (online) and local PostgreSQL (offline)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  LAB_MANAGER
+  EMPLOYEE
+  CUSTOM
+}
+
+enum CaseStatus {
+  RECEIVED       // استُلم
+  IN_PROGRESS    // جاري التصنيع
+  PROOF_SENT     // ذهبت البروفة
+  PROOF_RETURNED // عادت البروفة
+  COMPLETED      // اكتملت
+  DELIVERED      // سُلِّمت
+  CANCELLED      // ملغاة
+}
+
+enum ExpenseCategory {
+  RENT          // إيجار
+  SALARY        // مرتب
+  TRANSPORT     // مواصلات
+  SUPPLIES      // مستلزمات
+  UTILITIES     // مرافق (كهرباء/غاز/نت)
+  LAB_INVOICE   // فاتورة معمل خارجي
+  OTHER         // أخرى
+}
+
+enum AppointmentType {
+  PROOF_DELIVERY    // تسليم بروفة
+  PROOF_RETURN      // استلام بروفة
+  CASE_DELIVERY     // تسليم حالة
+  CASE_RECEIPT      // استلام حالة
+  CONSULTATION      // استشارة
+  OTHER
+}
+
+// ─── Models ──────────────────────────────────────────────
+
+model User {
+  id               String          @id @default(cuid())
+  name             String
+  email            String          @unique
+  password         String          // bcrypt hashed
+  role             Role            @default(EMPLOYEE)
+  rolePermissionId String?
+  rolePermission   RolePermission? @relation(fields: [rolePermissionId], references: [id])
+  isActive         Boolean         @default(true)
+  phone            String?
+  avatar           String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  sessions         Session[]
+  auditLogs        AuditLog[]
+  payments         Payment[]           @relation("PaymentCreator")
+  expenses         Expense[]           @relation("ExpenseCreator")
+  remittances      CourierRemittance[] @relation("RemittanceCreator")
+  transfers        FundTransfer[]      @relation("TransferCreator")
+
+  @@map("users")
+}
+
+model RolePermission {
+  id                    String   @id @default(cuid())
+  roleName              String   @unique // اسم الرول بالعربي (مثل: أدمن، فني، محاسب، استقبال...)
+  description           String?  // وصف الصلاحية
+  // 1. Cases (الحالات)
+  canViewCases          Boolean  @default(true)
+  canEditCases          Boolean  @default(true)
+  canDeleteCases        Boolean  @default(false)
+  // 2. Doctors (الأطباء)
+  canViewDoctors        Boolean  @default(true)
+  canManageDoctors      Boolean  @default(false)
+  canDeleteDoctors      Boolean  @default(false)
+  // 3. Employees (الموظفون)
+  canViewEmployees      Boolean  @default(true)
+  canManageEmployees    Boolean  @default(false)
+  canDeleteEmployees    Boolean  @default(false)
+  // 4. Couriers (المندوبين والموصلين)
+  canViewCouriers       Boolean  @default(true)
+  canManageCouriers     Boolean  @default(false)
+  canDeleteCouriers     Boolean  @default(false)
+  // 5. Products (أنواع التركيبات)
+  canViewProducts       Boolean  @default(true)
+  canManageProducts     Boolean  @default(false)
+  canDeleteProducts     Boolean  @default(false)
+  // 6. Appointments (المواعيد والزيارات)
+  canViewAppointments   Boolean  @default(true)
+  canEditAppointments   Boolean  @default(true)
+  canDeleteAppointments Boolean  @default(false)
+  // 7. Finance & Expenses (المعاملات المالية والمصروفات)
+  canViewFinance        Boolean  @default(false)
+  canManageExpenses     Boolean  @default(false)
+  canDeleteExpenses     Boolean  @default(false)
+  // 8. Reports & Settings (التقارير والإعدادات)
+  canViewReports        Boolean  @default(false)
+  canManageSettings     Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  users                 User[]
+
+  @@map("role_permissions")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@map("sessions")
+}
+
+model Doctor {
+  id           String        @id @default(cuid())
+  name         String
+  phone        String?
+  clinicName   String?
+  area         String?       // منطقة العيادة (مايو، سقارة، العمرانية...)
+  email        String?
+  notes        String?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  cases        Case[]
+  appointments Appointment[]
+  expenses     Expense[]
+
+  @@map("doctors")
+}
+
+model ProductType {
+  id          String   @id @default(cuid())
+  name        String   @unique  // Z, PFM, Night Guard, PMMA, ZDMAX, ZIMPLANT...
+  nameAr      String?           // الاسم بالعربي
+  basePrice   Float    @default(0)
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cases       Case[]
+
+  @@map("product_types")
+}
+
+model Case {
+  id              String      @id @default(cuid())
+  caseCode        String      @unique  // 11187, 12187 ...
+  workOrderNumber String?              // أوردر الشغل
+  
+  doctorId        String
+  doctor          Doctor      @relation(fields: [doctorId], references: [id])
+  
+  patientName     String
+  
+  productTypeId   String
+  productType     ProductType @relation(fields: [productTypeId], references: [id])
+  
+  color           String?     // A1, A2, 3M1, 3R1.5 ...
+  units           Int         @default(1)
+  pricePerUnit    Float
+  totalAmount     Float       // units * pricePerUnit
+  collected       Float       @default(0)
+  remaining       Float       // totalAmount - collected (computed on update)
+  
+  receivedAt      DateTime    @default(now())
+  proofSentAt     DateTime?   // ذهاب البروفة
+  proofReturnedAt DateTime?   // عودة البروفة
+  deliveryDate    DateTime?   // معاد التسليم المقرر
+  deliveredAt     DateTime?   // تاريخ التسليم الفعلي
+
+  status          CaseStatus  @default(RECEIVED)
+  notes           String?
+  teethMap        Int[]       @default([])  // FDI tooth numbers selected (e.g. [11,12,21,22])
+
+  // مراحل الإنتاج
+  marginDone      Boolean     @default(false)  // مارجين وسكان
+  latheeDone      Boolean     @default(false)  // خرط
+  glazeDone       Boolean     @default(false)  // ستين وجليز
+  designDone      Boolean     @default(false)  // ديزاين
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  payments        Payment[]
+  appointments    Appointment[]
+
+  @@map("cases")
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  caseId        String
+  case          Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  amount        Float
+  paymentMethod String   @default("CASH") // CASH, INSTAPAY, BANK_TRANSFER, VODAFONE_CASH, OTHER
+  courierId     String?
+  courier       Employee? @relation("PaymentCourier", fields: [courierId], references: [id])
+  paidAt        DateTime @default(now())
+  note          String?
+  createdById   String?
+  createdBy     User?    @relation("PaymentCreator", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@map("payments")
+}
+
+model Employee {
+  id                String    @id @default(cuid())
+  name              String
+  jobTitle          String?   // فني / موصل / مساعد ...
+  phone             String?
+  baseSalary        Float?    // الراتب الأساسي
+  startDate         DateTime?
+  isActive          Boolean   @default(true)
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  expenses          Expense[] // مصروفات مرتبطة بالموظف (مرتب، مواصلات...)
+  collectedPayments Payment[] @relation("PaymentCourier")
+  remittances       CourierRemittance[]
+
+  @@map("employees")
+}
+
+model Expense {
+  id            String          @id @default(cuid())
+  date          DateTime
+  description   String
+  amount        Float
+  category      ExpenseCategory @default(OTHER)
+  paymentMethod String          @default("CASH") // CASH, INSTAPAY, BANK_TRANSFER, VODAFONE_CASH, OTHER
+  month         Int             // 1-12
+  year          Int
+  employeeId    String?
+  employee      Employee?       @relation(fields: [employeeId], references: [id])
+  doctorId      String?
+  doctor        Doctor?         @relation(fields: [doctorId], references: [id])
+  createdById   String?
+  createdBy     User?           @relation("ExpenseCreator", fields: [createdById], references: [id])
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("expenses")
+}
+
+model Appointment {
+  id          String          @id @default(cuid())
+  doctorId    String
+  doctor      Doctor          @relation(fields: [doctorId], references: [id])
+  caseId      String?
+  case        Case?           @relation(fields: [caseId], references: [id])
+  type        AppointmentType @default(OTHER)
+  scheduledAt DateTime
+  notes       String?
+  isDone      Boolean         @default(false)
+  doneAt      DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("appointments")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // CREATE_CASE, UPDATE_PAYMENT, DELETE_EXPENSE...
+  entity    String   // Case, Payment, Expense, Doctor...
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model CourierRemittance {
+  id            String   @id @default(cuid())
+  employeeId    String
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  amount        Float
+  paymentMethod String   @default("CASH") // CASH, INSTAPAY, BANK_TRANSFER, VODAFONE_CASH, OTHER
+  date          DateTime @default(now())
+  month         Int
+  year          Int
+  notes         String?
+  createdById   String?
+  createdBy     User?    @relation("RemittanceCreator", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("courier_remittances")
+}
+
+// تحويلات بين طرق الدفع (كاش → إنستاباي، إنستاباي → فودافون كاش، إلخ)
+model FundTransfer {
+  id            String   @id @default(cuid())
+  fromMethod    String   // CASH, INSTAPAY, VODAFONE_CASH, OTHER
+  toMethod      String   // CASH, INSTAPAY, VODAFONE_CASH, OTHER
+  amount        Float
+  date          DateTime @default(now())
+  month         Int
+  year          Int
+  notes         String?
+  createdById   String?
+  createdBy     User?    @relation("TransferCreator", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("fund_transfers")
+}

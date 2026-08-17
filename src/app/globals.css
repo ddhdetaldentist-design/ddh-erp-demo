@@ -1,0 +1,626 @@
+@import "tailwindcss";
+
+/* ─── Apple Human Interface Design System Tokens ───────────────────────── */
+:root {
+  /* Brand & Accent Colors */
+  --color-primary:         #0066cc;   /* Apple Action Blue */
+  --color-primary-focus:   #0071e3;   /* Focus Blue */
+  --color-primary-on-dark: #2997ff;   /* Sky Link Blue for dark tiles */
+  --color-primary-hover:   #005bb5;
+
+  /* Surfaces & Canvas */
+  --color-canvas:          #f2f2f7;   /* Apple iOS Gray Canvas */
+  --color-surface:         #ffffff;   /* Pure White for Cards & Modals */
+  --color-surface-pearl:   #fafafc;   /* Pearl capsule fill */
+  --color-surface-cool:    #f5f5f7;   /* Search / input background */
+  --color-surface-dark:    #1d1d1f;   /* Near-Black Tile */
+  --color-surface-black:   #000000;   /* Global Nav Pure Void Black */
+
+  /* Text & Ink */
+  --color-ink:             #1d1d1f;   /* Apple Near-Black Ink */
+  --color-ink-muted:       #6e6e73;   /* Secondary Muted Copy */
+  --color-ink-subtle:      #86868b;   /* Captions & Fine Print */
+  --color-ink-white:       #ffffff;
+  --color-ink-white-muted: #a1a1a6;
+
+  /* Hairlines & Borders */
+  --color-hairline:        #e5e5ea;
+  --color-border:          rgba(0, 0, 0, 0.08);
+  --color-border-strong:   rgba(0, 0, 0, 0.16);
+
+  /* Semantics */
+  --color-success:         #34c759;   /* Apple iOS Green */
+  --color-warning:         #ff9500;   /* Apple iOS Orange */
+  --color-danger:          #ff3b30;   /* Apple iOS Red */
+
+  /* Spacing System */
+  --spacing-xxs: 4px;
+  --spacing-xs:  8px;
+  --spacing-sm:  12px;
+  --spacing-md:  16px;
+  --spacing-lg:  24px;
+  --spacing-xl:  32px;
+  --spacing-section: 64px;
+
+  /* Border Radius Scale */
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius-md:   14px;
+  --radius-lg:   20px;               /* Apple Card Radius */
+  --radius-xl:   28px;               /* Modal Radius */
+  --radius-pill: 9999px;             /* Apple Action Pill */
+  --radius-full: 9999px;
+
+  /* Elevation */
+  --shadow-card:    0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-hover:   0 4px 20px rgba(0,0,0,0.08);
+  --shadow-modal:   0 24px 64px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-product: rgba(0, 0, 0, 0.18) 2px 4px 20px 0;
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --topbar-height: 56px;
+
+  /* Mobile breakpoint for sidebar */
+  --sidebar-mobile-z: 50;
+}
+
+@theme {
+  --font-cairo: var(--font-cairo);
+  --font-ibm: var(--font-ibm-plex);
+  --font-mono: var(--font-mono);
+
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-primary: var(--color-primary);
+  --color-ink: var(--color-ink);
+  --color-ink-muted: var(--color-ink-muted);
+  --color-border: var(--color-border);
+
+  --radius-lg: var(--radius-lg);
+  --radius-pill: var(--radius-pill);
+}
+
+/* ─── Base Reset ────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-ibm-plex), var(--font-cairo), sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.10);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* ─── Typography Rules ───────────────────────────────────── */
+.font-display {
+  font-family: -apple-system, "SF Pro Display", var(--font-cairo), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.text-apple-blue,
+.text-accent {
+  color: var(--color-primary);
+}
+
+/* ─── Cards & Containers (Apple Rounded) ─────────────────── */
+
+/* Standard card: white surface, generous internal spacing, clean shadow */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.2s ease;
+}
+
+.card:has(> *:only-child) {
+  gap: 0;
+}
+
+/* Small card variant */
+.card-sm {
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Blue action card (Net Profit, etc) */
+.card-house,
+.card-dark {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  box-shadow: 0 6px 24px rgba(0, 102, 204, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Inner sub-card (inside modals or section panels) */
+.inner-card {
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+/* ─── Buttons (Apple Action Blue Pills) ─────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: 9px 20px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border: 1px solid var(--color-primary);
+}
+.btn-primary:hover {
+  background: var(--color-primary-focus);
+  border-color: var(--color-primary-focus);
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+}
+
+.btn-outlined,
+.btn-ghost {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid rgba(0, 102, 204, 0.25);
+}
+.btn-outlined:hover,
+.btn-ghost:hover {
+  background: rgba(0, 102, 204, 0.06);
+  border-color: rgba(0, 102, 204, 0.4);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: #ffffff;
+  border: 1px solid var(--color-danger);
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-ink-muted);
+  border: 1px solid var(--color-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.btn-icon:hover {
+  background: var(--color-canvas);
+  color: var(--color-primary);
+}
+
+/* ─── Form Inputs ───────────────────────────────────────── */
+.input {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.input::placeholder {
+  color: var(--color-ink-subtle);
+  font-size: 13px;
+}
+.input:focus {
+  background: #ffffff;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
+}
+
+/* ─── Select Dropdowns ──────────────────────────────────── */
+select,
+select.input {
+  padding: 8px 12px 8px 24px !important;
+  min-height: 42px !important;
+  line-height: 1.5 !important;
+  font-size: 13px !important;
+  box-sizing: border-box !important;
+  appearance: auto;
+}
+
+/* ─── Labels ────────────────────────────────────────────── */
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  margin-bottom: 5px;
+  letter-spacing: 0.01em;
+}
+
+.field-error {
+  font-size: 12px;
+  color: var(--color-danger);
+  margin-top: 4px;
+}
+
+/* ─── Badges ────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.01em;
+}
+
+/* ─── Data Tables ───────────────────────────────────────── */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-hairline);
+  background: #ffffff;
+}
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #ffffff;
+}
+
+table.data-table thead th {
+  background: var(--color-canvas);
+  color: var(--color-ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 11px 16px;
+  text-align: right;
+  border-bottom: 1px solid var(--color-hairline);
+  white-space: nowrap;
+}
+
+table.data-table tbody td {
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  color: var(--color-ink);
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+table.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+table.data-table tbody tr:hover td {
+  background: rgba(0, 102, 204, 0.025);
+}
+
+/* ─── Sidebar ───────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  right: 0;
+  top: 0;
+  background: #ffffff;
+  color: var(--color-ink);
+  border-left: 1px solid var(--color-hairline);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  overflow-y: auto;
+}
+
+/* ── Dashboard main area ── */
+.dashboard-main {
+  margin-right: var(--sidebar-width);
+}
+
+/* ── Mobile utilities ── */
+/* Visible only on mobile (< 768px) */
+.mobile-only {
+  display: none !important;
+}
+@media (max-width: 767px) {
+  .mobile-only {
+    display: inline-flex !important;
+  }
+}
+
+/* ── Mobile: sidebar slides in from right ── */
+@media (max-width: 767px) {
+  .sidebar {
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 50;
+  }
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+  .dashboard-main {
+    margin-right: 0;
+  }
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 9px var(--spacing-md);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-ink-muted);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 2px 10px;
+}
+.sidebar-nav-item:hover {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+.sidebar-nav-item.active {
+  background: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ─── KPI Card ──────────────────────────────────────────── */
+.kpi-card {
+  background: #ffffff;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ─── Horizontal Filter Bar ──────────────────────────────── */
+.filter-bar {
+  background: #ffffff;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+
+/* ─── Modal Overlay & Sheet ─────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.48);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.modal-sheet {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  border: 1px solid var(--color-hairline);
+  width: 100%;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-hairline);
+  flex-shrink: 0;
+  background: #ffffff;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-hairline);
+  background: var(--color-canvas);
+  flex-shrink: 0;
+}
+
+/* ─── Section Rows inside Modals ────────────────────────── */
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+/* ─── Animations ────────────────────────────────────────── */
+.page-enter {
+  animation: fadeSlideIn 0.22s ease forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.18s ease forwards;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Utility Helpers ───────────────────────────────────── */
+.text-primary { color: var(--color-primary); }
+.text-ink     { color: var(--color-ink); }
+.text-ink-muted  { color: var(--color-ink-muted); }
+.text-ink-subtle { color: var(--color-ink-subtle); }
+.bg-canvas    { background-color: var(--color-canvas); }
+.bg-surface   { background-color: var(--color-surface); }
+
+/* ─── Mobile Responsive Tweaks ─────────────────────────── */
+
+/* Topbar: reduce padding on mobile */
+@media (max-width: 767px) {
+  header.flex.items-center {
+    padding-left: 12px;
+    padding-right: 12px;
+    gap: 10px;
+  }
+
+  /* Page content padding */
+  .page-content {
+    padding: 12px;
+  }
+
+  /* Filter bars stack on mobile */
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  /* KPI cards: 2 per row on small screens */
+  .kpi-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Cards: reduce padding on mobile */
+  .card {
+    padding: 14px 16px;
+  }
+
+  /* Modal: full width on mobile */
+  .modal-sheet {
+    max-height: 95vh;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+  }
+}
+
+/* Wider than mobile but still tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .page-content {
+    padding: 16px;
+  }
+}
+
