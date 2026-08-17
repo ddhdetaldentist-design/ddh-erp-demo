@@ -182,6 +182,7 @@ function matchWhere(record: Record<string, any>, where?: Record<string, any>): b
       }
       continue;
     }
+
     if (key === "email" && typeof record[key] === "string" && typeof value === "string") {
       if (record[key].trim().toLowerCase() !== value.trim().toLowerCase()) return false;
       continue;
@@ -260,7 +261,7 @@ function resolveIncludes(modelName: string, record: any, include?: Record<string
   } else if (modelName === "payment") {
     if (include.case) {
       const c = db.cases.find((cs) => cs.id === record.caseId);
-      res.case = resolveIncludes("case", c, include.case.include);
+      res.case = resolveIncludes("case", c, include.case?.include);
     }
     if (include.courier) {
       const emp = db.employees.find((e) => e.id === record.courierId);
