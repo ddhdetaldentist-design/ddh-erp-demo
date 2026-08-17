@@ -180,6 +180,8 @@ function matchWhere(record: Record<string, any>, where?: Record<string, any>): b
       } else if (typeof value === "object" && value !== null) {
         if (matchWhere(record, value)) return false;
       }
+      continue;
+    }
     if (key === "email" && typeof record[key] === "string" && typeof value === "string") {
       if (record[key].trim().toLowerCase() !== value.trim().toLowerCase()) return false;
       continue;
