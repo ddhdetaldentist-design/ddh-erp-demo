@@ -126,9 +126,9 @@ export function Topbar({ title, subtitle, action, onMenuToggle }: TopbarProps) {
       {/* Actions */}
       <div className="flex items-center gap-3">
         {/* Demo Mode Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-[11px] font-bold shadow-3xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-          <span>وضع الديمو التجريبي</span>
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <span>نسخة تجريبية</span>
         </div>
 
         {action}

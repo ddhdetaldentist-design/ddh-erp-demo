@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { z } from "zod";
 import Image from "next/image";
-import { Loader2, ShieldCheck, UserCheck, Sparkles, KeyRound, ArrowLeft } from "lucide-react";
+import { Loader2, ShieldCheck, Building2, Wrench, Calculator, UserCheck, KeyRound } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("بريد إلكتروني غير صحيح"),
@@ -17,46 +16,45 @@ const DEMO_ACCOUNTS = [
     role: "مدير النظام (Super Admin)",
     email: "admin@ddh.demo",
     name: "د. أحمد سامي",
-    icon: "👑",
-    badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
+    icon: ShieldCheck,
+    color: "#7c3aed",
     desc: "صلاحيات كاملة وغير مقيدة",
   },
   {
     role: "مدير المعمل (Manager)",
     email: "manager@ddh.demo",
     name: "م. طارق محمود",
-    icon: "💼",
-    badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
+    icon: Building2,
+    color: "#2563eb",
     desc: "إدارة الحالات والمناديب والعمليات",
   },
   {
     role: "فني CAD/CAM (Tech)",
     email: "tech@ddh.demo",
     name: "إسلام حسن",
-    icon: "🔬",
-    badgeColor: "bg-teal-100 text-teal-800 border-teal-200",
+    icon: Wrench,
+    color: "#0d9488",
     desc: "متابعة مراحل الإنتاج والبروفات",
   },
   {
     role: "محاسب المعمل (Accountant)",
     email: "accountant@ddh.demo",
     name: "سارة خالد",
-    icon: "💰",
-    badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    icon: Calculator,
+    color: "#059669",
     desc: "إدارة الخزن والمصروفات والتحصيل",
   },
   {
     role: "زائر للعرض (Viewer)",
     email: "viewer@ddh.demo",
     name: "زائر تجريبي",
-    icon: "👁️",
-    badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
+    icon: UserCheck,
+    color: "#d97706",
     desc: "عرض جميع الشاشات (قراءة فقط)",
   },
 ];
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("admin@ddh.demo");
   const [password, setPassword] = useState("demo123456");
   const [loading, setLoading] = useState(false);
@@ -65,7 +63,10 @@ export default function LoginPage() {
 
   const executeLogin = async (targetEmail: string, targetPass: string) => {
     setError("");
-    const result = loginSchema.safeParse({ email: targetEmail, password: targetPass });
+    const cleanEmail = targetEmail.trim().toLowerCase();
+    const cleanPass = targetPass.trim();
+
+    const result = loginSchema.safeParse({ email: cleanEmail, password: cleanPass });
     if (!result.success) {
       setError(result.error.issues[0]?.message || "بيانات غير صحيحة");
       return;
@@ -74,21 +75,21 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await signIn("credentials", {
-        email: targetEmail,
-        password: targetPass,
+        email: cleanEmail,
+        password: cleanPass,
         redirect: false,
       });
 
-      if (res?.error) {
+      if (!res || res.error) {
         setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+        setLoading(false);
       } else {
-        router.push("/");
-        router.refresh();
+        // Successful login: perform full navigation to establish session cookie immediately
+        window.location.href = "/";
       }
     } catch {
-      setError("حدث خطأ أثناء تسجيل الدخول، حاول مرة أخرى");
-    } finally {
-      setLoading(false);
+      // In case of automatic redirect or fetch error
+      window.location.href = "/";
     }
   };
 
@@ -120,43 +121,22 @@ export default function LoginPage() {
       <div
         style={{
           width: "100%",
-          maxWidth: "520px",
+          maxWidth: "480px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}
       >
         {/* Logo */}
-        <div style={{ marginBottom: "12px", textAlign: "center" }}>
+        <div style={{ marginBottom: "10px", textAlign: "center" }}>
           <Image
             src="/logo-transparent.png"
             alt="DDH Dental Logo"
-            width={240}
-            height={90}
-            style={{ height: "160px", width: "auto", objectFit: "contain" }}
+            width={220}
+            height={80}
+            style={{ height: "150px", width: "auto", objectFit: "contain" }}
             priority
           />
-        </div>
-
-        {/* Demo Mode Announcement Badge */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "#eff6ff",
-            border: "1px solid #bfdbfe",
-            color: "#1d4ed8",
-            borderRadius: "9999px",
-            padding: "6px 16px",
-            fontSize: "13px",
-            fontWeight: 700,
-            marginBottom: "20px",
-            boxShadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
-          }}
-        >
-          <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
-          <span>نسخة تجريبية تفاعلية بالكامل (Interactive Demo)</span>
         </div>
 
         {/* Main Card */}
@@ -164,68 +144,68 @@ export default function LoginPage() {
           style={{
             width: "100%",
             backgroundColor: "#ffffff",
-            borderRadius: "20px",
-            padding: "32px",
-            border: "1px solid rgba(0, 0, 0, 0.06)",
-            boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)",
+            borderRadius: "16px",
+            padding: "28px",
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.04)",
             boxSizing: "border-box",
           }}
         >
           {/* Header Titles */}
-          <div style={{ marginBottom: "24px", textAlign: "right" }}>
+          <div style={{ marginBottom: "20px", textAlign: "right" }}>
             <h1
               style={{
-                fontSize: "24px",
+                fontSize: "22px",
                 fontWeight: 800,
                 color: "#0f172a",
-                margin: "0 0 6px 0",
+                margin: "0 0 4px 0",
                 lineHeight: 1.2,
               }}
             >
-              مرحباً بك في نظام DDH
+              تسجيل الدخول — معمل DDH
             </h1>
             <p
               style={{
                 fontSize: "13px",
-                fontWeight: 500,
                 color: "#64748b",
                 margin: 0,
               }}
             >
-              اختر دوراً تجريبياً للدخول الفوري بنقرة واحدة أو أدخل البيانات يدوياً
+              اختر حساباً للدخول السريع أو أدخل البريد وكلمة المرور
             </p>
           </div>
 
           {/* Quick Demo Login Cards */}
-          <div style={{ marginBottom: "24px" }}>
+          <div style={{ marginBottom: "20px" }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: "10px",
+                marginBottom: "8px",
               }}
             >
               <span
                 style={{
                   fontSize: "12px",
                   fontWeight: 700,
-                  color: "#475569",
+                  color: "#334155",
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
                 }}
               >
                 <KeyRound className="w-3.5 h-3.5 text-blue-600" />
-                دخول تجريبي سريع بنقرة واحدة:
+                دخول سريع بنقرة واحدة:
               </span>
-              <span style={{ fontSize: "11px", color: "#94a3b8" }}>
-                كلمة المرور: <strong className="text-slate-700">demo123456</strong>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>
+                كلمة المرور: <strong className="text-slate-800">demo123456</strong>
               </span>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {DEMO_ACCOUNTS.map((acc) => {
+                const IconComponent = acc.icon;
                 const isThisLoading = loading && activeAccount === acc.email;
                 return (
                   <button
@@ -235,8 +215,8 @@ export default function LoginPage() {
                     disabled={loading}
                     style={{
                       width: "100%",
-                      padding: "10px 14px",
-                      borderRadius: "12px",
+                      padding: "8px 12px",
+                      borderRadius: "10px",
                       border: "1px solid #e2e8f0",
                       backgroundColor: "#f8fafc",
                       cursor: loading ? "not-allowed" : "pointer",
@@ -249,7 +229,7 @@ export default function LoginPage() {
                     onMouseEnter={(e) => {
                       if (!loading) {
                         e.currentTarget.style.backgroundColor = "#f1f5f9";
-                        e.currentTarget.style.borderColor = "#93c5fd";
+                        e.currentTarget.style.borderColor = "#cbd5e1";
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -260,7 +240,22 @@ export default function LoginPage() {
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <span style={{ fontSize: "20px" }}>{acc.icon}</span>
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "8px",
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #e2e8f0",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: acc.color,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <IconComponent className="w-4 h-4" />
+                      </div>
                       <div>
                         <div style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b" }}>
                           {acc.role}
@@ -271,7 +266,7 @@ export default function LoginPage() {
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
                       {isThisLoading ? (
                         <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
                       ) : (
@@ -285,7 +280,7 @@ export default function LoginPage() {
                             borderRadius: "6px",
                           }}
                         >
-                          دخول سريع ←
+                          دخول ←
                         </span>
                       )}
                     </div>
@@ -299,7 +294,7 @@ export default function LoginPage() {
             style={{
               position: "relative",
               textAlign: "center",
-              margin: "24px 0",
+              margin: "20px 0",
             }}
           >
             <div style={{ height: "1px", backgroundColor: "#e2e8f0" }} />
@@ -310,13 +305,13 @@ export default function LoginPage() {
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 backgroundColor: "#ffffff",
-                padding: "0 12px",
-                fontSize: "12px",
+                padding: "0 10px",
+                fontSize: "11px",
                 color: "#94a3b8",
                 fontWeight: 600,
               }}
             >
-              أو تسجيل الدخول العادي
+              أو كتابة البيانات
             </span>
           </div>
 
@@ -324,14 +319,14 @@ export default function LoginPage() {
           {error && (
             <div
               style={{
-                padding: "12px 16px",
-                borderRadius: "10px",
+                padding: "10px 14px",
+                borderRadius: "8px",
                 fontSize: "13px",
                 fontWeight: 600,
                 color: "#dc2626",
                 backgroundColor: "#fef2f2",
                 border: "1px solid #fecaca",
-                marginBottom: "20px",
+                marginBottom: "16px",
                 textAlign: "right",
               }}
             >
@@ -341,14 +336,14 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit}>
             {/* Email Field */}
-            <div style={{ marginBottom: "14px", textAlign: "right" }}>
+            <div style={{ marginBottom: "12px", textAlign: "right" }}>
               <label
                 style={{
                   display: "block",
                   fontSize: "12px",
                   fontWeight: 700,
                   color: "#334155",
-                  marginBottom: "6px",
+                  marginBottom: "4px",
                 }}
               >
                 البريد الإلكتروني
@@ -361,11 +356,11 @@ export default function LoginPage() {
                 placeholder="admin@ddh.demo"
                 style={{
                   width: "100%",
-                  height: "44px",
+                  height: "42px",
                   backgroundColor: "#ffffff",
                   border: "1px solid #cbd5e1",
-                  borderRadius: "10px",
-                  padding: "0 14px",
+                  borderRadius: "8px",
+                  padding: "0 12px",
                   fontSize: "14px",
                   color: "#0f172a",
                   outline: "none",
@@ -379,14 +374,14 @@ export default function LoginPage() {
             </div>
 
             {/* Password Field */}
-            <div style={{ marginBottom: "20px", textAlign: "right" }}>
+            <div style={{ marginBottom: "18px", textAlign: "right" }}>
               <label
                 style={{
                   display: "block",
                   fontSize: "12px",
                   fontWeight: 700,
                   color: "#334155",
-                  marginBottom: "6px",
+                  marginBottom: "4px",
                 }}
               >
                 كلمة المرور
@@ -399,11 +394,11 @@ export default function LoginPage() {
                 placeholder="demo123456"
                 style={{
                   width: "100%",
-                  height: "44px",
+                  height: "42px",
                   backgroundColor: "#ffffff",
                   border: "1px solid #cbd5e1",
-                  borderRadius: "10px",
-                  padding: "0 14px",
+                  borderRadius: "8px",
+                  padding: "0 12px",
                   fontSize: "14px",
                   color: "#0f172a",
                   outline: "none",
@@ -423,12 +418,12 @@ export default function LoginPage() {
               disabled={loading}
               style={{
                 width: "100%",
-                height: "46px",
+                height: "44px",
                 backgroundColor: "#2563eb",
                 color: "#ffffff",
                 fontWeight: 700,
                 fontSize: "15px",
-                borderRadius: "10px",
+                borderRadius: "8px",
                 border: "none",
                 cursor: loading ? "not-allowed" : "pointer",
                 display: "flex",
@@ -440,11 +435,11 @@ export default function LoginPage() {
             >
               {loading && !activeAccount ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   جارٍ تسجيل الدخول...
                 </>
               ) : (
-                "تسجيل الدخول للنظام"
+                "تسجيل الدخول"
               )}
             </button>
           </form>
@@ -453,7 +448,7 @@ export default function LoginPage() {
         {/* Footer */}
         <div
           style={{
-            marginTop: "20px",
+            marginTop: "16px",
             fontSize: "12px",
             color: "#94a3b8",
             textAlign: "center",
