@@ -444,6 +444,58 @@ function createModelHandler(modelKey: keyof MockStore, modelName: string) {
       return result;
     },
 
+    async groupBy(args: { by: string[]; where?: any; _count?: Record<string, boolean>; _sum?: Record<string, boolean> }) {
+      const store = getMockStore();
+      const list = (store[modelKey] as Array<Record<string, any>>).filter((item) => matchWhere(item, args.where));
+      const groupsMap = new Map<string, { keyValues: Record<string, any>; items: Array<Record<string, any>> }>();
+
+      for (const item of list) {
+        const keyParts = (args.by || []).map((field) => String(item[field]));
+        const groupKey = keyParts.join("___");
+
+        if (!groupsMap.has(groupKey)) {
+          const keyValues: Record<string, any> = {};
+          for (const field of args.by || []) {
+            keyValues[field] = item[field];
+          }
+          groupsMap.set(groupKey, { keyValues, items: [] });
+        }
+
+        groupsMap.get(groupKey)!.items.push(item);
+      }
+
+      const results = [];
+      for (const { keyValues, items } of groupsMap.values()) {
+        const entry: Record<string, any> = { ...keyValues };
+
+        if (args._count) {
+          entry._count = {};
+          for (const [countField, isCount] of Object.entries(args._count)) {
+            if (isCount) {
+              if (countField === "_all" || countField === "id" || countField === "_count") {
+                entry._count[countField] = items.length;
+              } else {
+                entry._count[countField] = items.filter((it) => it[countField] !== null && it[countField] !== undefined).length;
+              }
+            }
+          }
+        }
+
+        if (args._sum) {
+          entry._sum = {};
+          for (const [sumField, isSum] of Object.entries(args._sum)) {
+            if (isSum) {
+              entry._sum[sumField] = items.reduce((acc, curr) => acc + (Number(curr[sumField]) || 0), 0);
+            }
+          }
+        }
+
+        results.push(entry);
+      }
+
+      return results;
+    },
+
     async create(args: { data: Record<string, any>; include?: any; select?: any }) {
       const store = getMockStore();
       const list = store[modelKey] as Array<Record<string, any>>;
