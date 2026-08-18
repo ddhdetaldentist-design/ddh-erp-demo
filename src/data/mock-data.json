@@ -164,58 +164,6 @@
       "avatar": null,
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "usr-manager-2",
-      "name": "م. طارق محمود",
-      "email": "manager@ddh.demo",
-      "password": "$2a$10$w3qI4Q4p4P8E7m3FzM2e7OK1A1iEwzKjY9uLg5mC4p4P8E7m3FzM2",
-      "role": "LAB_MANAGER",
-      "rolePermissionId": "rp-lab-manager",
-      "isActive": true,
-      "phone": "01119876543",
-      "avatar": null,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "usr-tech-3",
-      "name": "إسلام حسن (فني CAD/CAM)",
-      "email": "tech@ddh.demo",
-      "password": "$2a$10$w3qI4Q4p4P8E7m3FzM2e7OK1A1iEwzKjY9uLg5mC4p4P8E7m3FzM2",
-      "role": "CUSTOM",
-      "rolePermissionId": "rp-technician",
-      "isActive": true,
-      "phone": "01224567890",
-      "avatar": null,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "usr-acc-4",
-      "name": "سارة خالد (المحاسب المالي)",
-      "email": "accountant@ddh.demo",
-      "password": "$2a$10$w3qI4Q4p4P8E7m3FzM2e7OK1A1iEwzKjY9uLg5mC4p4P8E7m3FzM2",
-      "role": "CUSTOM",
-      "rolePermissionId": "rp-accountant",
-      "isActive": true,
-      "phone": "01098765432",
-      "avatar": null,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-01T00:00:00.000Z"
-    },
-    {
-      "id": "usr-viewer-5",
-      "name": "زائر تجريبي (Demo Guest)",
-      "email": "viewer@ddh.demo",
-      "password": "$2a$10$w3qI4Q4p4P8E7m3FzM2e7OK1A1iEwzKjY9uLg5mC4p4P8E7m3FzM2",
-      "role": "CUSTOM",
-      "rolePermissionId": "rp-viewer",
-      "isActive": true,
-      "phone": "01000000000",
-      "avatar": null,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-01T00:00:00.000Z"
     }
   ],
   "productTypes": [
