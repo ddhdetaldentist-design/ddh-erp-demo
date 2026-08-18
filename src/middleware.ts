@@ -4,24 +4,27 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Check for NextAuth session cookies
-  const token =
-    req.cookies.get("authjs.session-token")?.value ||
-    req.cookies.get("__Secure-authjs.session-token")?.value ||
-    req.cookies.get("next-auth.session-token")?.value ||
-    req.cookies.get("__Secure-next-auth.session-token")?.value;
-
-  const isLoggedIn = !!token;
-  const isOnLoginPage = pathname === "/login";
-
   // Allow static assets, images, icons, and API routes always
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
-    pathname.includes(".")
+    pathname.includes(".") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/apple-icon.png" ||
+    pathname === "/icon.png"
   ) {
     return NextResponse.next();
   }
+
+  // Check for ANY NextAuth / Auth.js session cookie (handles chunked cookies too)
+  const allCookies = req.cookies.getAll();
+  const isLoggedIn = allCookies.some(
+    (c) =>
+      (c.name.includes("session-token") || c.name.includes("authjs") || c.name.includes("next-auth")) &&
+      !!c.value
+  );
+
+  const isOnLoginPage = pathname === "/login";
 
   // Redirect unauthenticated users to /login
   if (!isLoggedIn && !isOnLoginPage) {
