@@ -56,8 +56,8 @@ declare module "next-auth" {
 }
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().min(1, "يرجى كتابة البريد الإلكتروني"),
+  password: z.string().optional(),
 });
 
 export const defaultAdminPermissions: UserPermissions = {
@@ -189,79 +189,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const parsed = loginSchema.safeParse(credentials);
-        if (!parsed.success) return null;
+        const rawEmail = typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : "demo@ddh.demo";
+        const normalizedEmail = rawEmail || "demo@ddh.demo";
 
-        const { email, password } = parsed.data;
-        const normalizedEmail = email.trim().toLowerCase();
+        try {
+          const users = await prisma.user.findMany({
+            include: { rolePermission: true },
+          });
 
-        const users = await prisma.user.findMany({
-          include: { rolePermission: true },
-        });
-
-        let user = (users as any[]).find(
-          (u: any) => u.email.trim().toLowerCase() === normalizedEmail
-        );
-
-        if (!user) {
-          user = (users as any[]).find(
-            (u: any) =>
-              normalizedEmail.includes(u.email.split("@")[0]) ||
-              u.email.toLowerCase().includes(normalizedEmail)
+          let user = (users as any[]).find(
+            (u: any) => u.email.trim().toLowerCase() === normalizedEmail || u.id === normalizedEmail
           );
+
+          if (!user) {
+            user = (users as any[]).find(
+              (u: any) =>
+                normalizedEmail.includes(u.email.split("@")[0]) ||
+                u.email.toLowerCase().includes(normalizedEmail) ||
+                (normalizedEmail.includes("demo") && u.email.includes("demo"))
+            );
+          }
+
+          if (!user && users.length > 0) {
+            user = users.find((u: any) => u.email.includes("demo")) || users[0];
+          }
+
+          if (user) {
+            return {
+              id: user.id,
+              name: user.name || "مستخدم تجريبي (Demo User)",
+              email: user.email || "demo@ddh.demo",
+              role: user.role || "SUPER_ADMIN",
+              permissions: defaultAdminPermissions,
+            };
+          }
+        } catch {
+          // DB or runtime fallback
         }
 
-        if (!user && users.length > 0) {
-          user = users[0];
-        }
-
-        if (!user) return null;
-
-        let permissions: UserPermissions = defaultEmptyPermissions;
-
-        if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
-          permissions = defaultAdminPermissions;
-        } else if (user.rolePermission) {
-          permissions = {
-            canViewCases:          user.rolePermission.canViewCases,
-            canEditCases:          user.rolePermission.canEditCases,
-            canDeleteCases:        user.rolePermission.canDeleteCases,
-
-            canViewDoctors:        user.rolePermission.canViewDoctors ?? true,
-            canManageDoctors:      user.rolePermission.canManageDoctors,
-            canDeleteDoctors:      user.rolePermission.canDeleteDoctors ?? false,
-
-            canViewEmployees:      user.rolePermission.canViewEmployees ?? true,
-            canManageEmployees:    user.rolePermission.canManageEmployees,
-            canDeleteEmployees:    user.rolePermission.canDeleteEmployees ?? false,
-
-            canViewCouriers:       user.rolePermission.canViewCouriers ?? true,
-            canManageCouriers:     user.rolePermission.canManageCouriers ?? false,
-            canDeleteCouriers:     user.rolePermission.canDeleteCouriers ?? false,
-
-            canViewProducts:       user.rolePermission.canViewProducts ?? true,
-            canManageProducts:     user.rolePermission.canManageProducts,
-            canDeleteProducts:     user.rolePermission.canDeleteProducts ?? false,
-
-            canViewAppointments:   user.rolePermission.canViewAppointments ?? true,
-            canEditAppointments:   user.rolePermission.canEditAppointments ?? true,
-            canDeleteAppointments: user.rolePermission.canDeleteAppointments ?? false,
-
-            canViewFinance:        user.rolePermission.canViewFinance,
-            canManageExpenses:     user.rolePermission.canManageExpenses,
-            canDeleteExpenses:     user.rolePermission.canDeleteExpenses ?? false,
-
-            canViewReports:        user.rolePermission.canViewReports,
-            canManageSettings:     user.rolePermission.canManageSettings,
-          };
-        }
-
+        // Guaranteed fallback demo user with full viewing and access permissions
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          permissions,
+          id: "usr-demo-account",
+          name: "مستخدم تجريبي (Demo Account)",
+          email: "demo@ddh.demo",
+          role: "SUPER_ADMIN",
+          permissions: defaultAdminPermissions,
         };
       },
     }),

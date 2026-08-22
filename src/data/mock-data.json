@@ -153,6 +153,19 @@
   ],
   "users": [
     {
+      "id": "usr-demo-account",
+      "name": "مستخدم تجريبي (Demo User)",
+      "email": "demo@ddh.demo",
+      "password": "demo123456",
+      "role": "SUPER_ADMIN",
+      "rolePermissionId": "rp-super-admin",
+      "isActive": true,
+      "phone": "01000000000",
+      "avatar": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
       "id": "usr-admin-1",
       "name": "د. أحمد سامي",
       "email": "admin@ddh.demo",
