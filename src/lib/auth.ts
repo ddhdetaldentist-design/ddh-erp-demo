@@ -176,7 +176,7 @@ function _buildPermissions(dbUser: DbUserWithRole): UserPermissions {
   return defaultEmptyPermissions;
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const nextAuthObj = NextAuth({
   ...authConfig,
   trustHost: true,
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "ddh-dental-demo-secret-key-2026-interactive",
@@ -188,50 +188,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        const rawEmail = typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : "demo@ddh.demo";
-        const normalizedEmail = rawEmail || "demo@ddh.demo";
-
-        try {
-          const users = await prisma.user.findMany({
-            include: { rolePermission: true },
-          });
-
-          let user = (users as any[]).find(
-            (u: any) => u.email.trim().toLowerCase() === normalizedEmail || u.id === normalizedEmail
-          );
-
-          if (!user) {
-            user = (users as any[]).find(
-              (u: any) =>
-                normalizedEmail.includes(u.email.split("@")[0]) ||
-                u.email.toLowerCase().includes(normalizedEmail) ||
-                (normalizedEmail.includes("demo") && u.email.includes("demo"))
-            );
-          }
-
-          if (!user && users.length > 0) {
-            user = users.find((u: any) => u.email.includes("demo")) || users[0];
-          }
-
-          if (user) {
-            return {
-              id: user.id,
-              name: user.name || "مستخدم تجريبي (Demo User)",
-              email: user.email || "demo@ddh.demo",
-              role: user.role || "SUPER_ADMIN",
-              permissions: defaultAdminPermissions,
-            };
-          }
-        } catch {
-          // DB or runtime fallback
-        }
-
-        // Guaranteed fallback demo user with full viewing and access permissions
+      async authorize() {
         return {
-          id: "usr-demo-account",
-          name: "مستخدم تجريبي (Demo Account)",
-          email: "demo@ddh.demo",
+          id: "usr-admin-1",
+          name: "د. أحمد سامي (مدير النظام)",
+          email: "admin@ddh.demo",
           role: "SUPER_ADMIN",
           permissions: defaultAdminPermissions,
         };
@@ -241,47 +202,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async jwt({ token, user }) {
-      // On first login: user object is present — seed the token from DB
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role || "SUPER_ADMIN";
-        token.permissions = (user as any).permissions || defaultAdminPermissions;
-        token.permissionsRefreshedAt = Date.now();
-        return token;
-      }
-
-      // On subsequent requests: only re-fetch from DB every 15 minutes
-      const FIFTEEN_MIN = 15 * 60 * 1000;
-      const lastRefresh = (token.permissionsRefreshedAt as number) ?? 0;
-      if (Date.now() - lastRefresh < FIFTEEN_MIN) {
-        // Token is fresh — skip DB query
-        return token;
-      }
-
-      // Refresh permissions from DB (happens max once per 15 min per user)
-      const userId = token.id as string | undefined;
-      if (userId) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: userId },
-          include: { rolePermission: true },
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.permissions = _buildPermissions(dbUser);
-        }
-        token.permissionsRefreshedAt = Date.now();
-      }
-
+      token.id = user?.id || "usr-admin-1";
+      token.role = (user as any)?.role || "SUPER_ADMIN";
+      token.permissions = defaultAdminPermissions;
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        (session.user as { id: string; role: string; permissions?: UserPermissions }).id = token.id as string;
-        (session.user as { id: string; role: string; permissions?: UserPermissions }).role = (token.role as string) || "EMPLOYEE";
-        (session.user as { id: string; role: string; permissions?: UserPermissions }).permissions =
-          (token.permissions as UserPermissions) || defaultEmptyPermissions;
+      if (session?.user) {
+        session.user.id = (token?.id as string) || "usr-admin-1";
+        session.user.role = (token?.role as string) || "SUPER_ADMIN";
+        session.user.permissions = defaultAdminPermissions;
       }
       return session;
     },
   },
 });
+
+export const defaultDemoSession: any = {
+  user: {
+    id: "usr-admin-1",
+    name: "د. أحمد سامي (مدير النظام)",
+    email: "admin@ddh.demo",
+    role: "SUPER_ADMIN",
+    permissions: defaultAdminPermissions,
+  },
+  expires: "2099-01-01T00:00:00.000Z",
+};
+
+export const handlers = nextAuthObj.handlers;
+export const signIn = nextAuthObj.signIn;
+export const signOut = nextAuthObj.signOut;
+
+export const auth = async (...args: any[]): Promise<any> => {
+  try {
+    const session = await (nextAuthObj.auth as any)(...args);
+    if (session?.user?.id) return session;
+  } catch {
+    // fallback
+  }
+  return defaultDemoSession;
+};
