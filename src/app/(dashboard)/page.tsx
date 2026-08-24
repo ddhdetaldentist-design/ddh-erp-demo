@@ -9,6 +9,8 @@ import { ar } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 async function getDashboardData() {
   const now = new Date();
   const currentMonth = now.getMonth() + 1;

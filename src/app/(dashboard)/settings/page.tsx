@@ -4,6 +4,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { SettingsClient } from "@/components/settings/SettingsClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "إعدادات النظام والمستخدمين" };
 
 async function getSettingsData() {

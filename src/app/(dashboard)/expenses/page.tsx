@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { ExpensesClient } from "@/components/finance/ExpensesClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "المصروفات" };
 
 async function getData(month: number, year: number) {

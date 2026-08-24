@@ -2,6 +2,8 @@ import { auth, defaultDemoSession } from "@/lib/auth";
 import { SessionProvider } from "next-auth/react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {

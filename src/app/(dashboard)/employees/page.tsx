@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { EmployeesClient } from "@/components/employees/EmployeesClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "الموظفون" };
 
 async function getEmployeesData() {

@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { ReportsClient } from "@/components/reports/ReportsClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "التقارير المالية واستخراج الحسابات" };
 
 async function getReportsData() {

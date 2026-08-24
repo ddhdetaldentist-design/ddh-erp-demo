@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { CouriersClient } from "@/components/couriers/CouriersClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "المندوبون والتحصيل الميداني" };
 
 async function getCouriersData() {

@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { ProductsClient } from "@/components/products/ProductsClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "أنواع التركيبات" };
 
 async function getProductsData() {

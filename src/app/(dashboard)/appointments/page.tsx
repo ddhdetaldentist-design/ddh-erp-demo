@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { AppointmentsClient } from "@/components/appointments/AppointmentsClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "المواعيد والزيارات" };
 
 async function getData() {

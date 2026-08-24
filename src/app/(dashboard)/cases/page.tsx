@@ -4,6 +4,7 @@ import { CasesTable } from "@/components/cases/CasesTable";
 import { CasesHeaderActions } from "@/components/cases/CasesHeaderActions";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "الحالات" };
 
 async function getCases() {

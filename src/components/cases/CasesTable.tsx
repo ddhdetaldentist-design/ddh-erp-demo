@@ -34,8 +34,8 @@ interface Case {
   pricePerUnit: number;
   receivedAt: Date;
   deliveryDate: Date | null;
-  doctor: { name: string };
-  productType: { name: string };
+  doctor?: { name: string } | null;
+  productType?: { name: string } | null;
 }
 
 interface CasesTableProps {
@@ -90,8 +90,8 @@ export function CasesTable({ cases }: CasesTableProps) {
         (c) =>
           c.caseCode.toLowerCase().includes(q) ||
           c.patientName.toLowerCase().includes(q) ||
-          c.doctor.name.toLowerCase().includes(q) ||
-          c.productType.name.toLowerCase().includes(q)
+          (c.doctor?.name || "").toLowerCase().includes(q) ||
+          (c.productType?.name || "").toLowerCase().includes(q)
       );
     }
 
@@ -101,8 +101,8 @@ export function CasesTable({ cases }: CasesTableProps) {
 
     list.sort((a, b) => {
       let av: unknown, bv: unknown;
-      if (sortKey === "doctor.name") { av = a.doctor.name; bv = b.doctor.name; }
-      else if (sortKey === "productType.name") { av = a.productType.name; bv = b.productType.name; }
+      if (sortKey === "doctor.name") { av = a.doctor?.name ?? ""; bv = b.doctor?.name ?? ""; }
+      else if (sortKey === "productType.name") { av = a.productType?.name ?? ""; bv = b.productType?.name ?? ""; }
       else { av = a[sortKey as keyof Case]; bv = b[sortKey as keyof Case]; }
 
       if (av == null) return 1;
@@ -421,11 +421,11 @@ export function CasesTable({ cases }: CasesTableProps) {
                         #{c.caseCode}
                       </span>
                     </td>
-                    <td className="font-semibold text-ink">{c.doctor.name}</td>
+                    <td className="font-semibold text-ink">{c.doctor?.name || "—"}</td>
                     <td style={{ color: "var(--color-ink-muted)" }}>{c.patientName}</td>
                     <td>
                       <span className="badge" style={{ background: "var(--color-canvas)", color: "var(--color-ink)" }}>
-                        {c.productType.name}
+                        {c.productType?.name || "—"}
                       </span>
                     </td>
                     <td style={{ color: "var(--color-ink-muted)", fontFamily: "var(--font-mono)" }}>

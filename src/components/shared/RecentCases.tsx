@@ -14,8 +14,8 @@ interface Case {
   remaining: number;
   status: string;
   receivedAt: Date;
-  doctor: { name: string };
-  productType: { name: string };
+  doctor?: { name: string } | null;
+  productType?: { name: string } | null;
 }
 
 interface RecentCasesProps {
@@ -104,7 +104,7 @@ export function RecentCases({ cases }: RecentCasesProps) {
                     <td>
                       <div>
                         <p className="font-semibold text-sm text-ink">
-                          {c.doctor.name}
+                          {c.doctor?.name || "—"}
                         </p>
                         <p
                           className="text-xs"
@@ -122,7 +122,7 @@ export function RecentCases({ cases }: RecentCasesProps) {
                           color: "var(--color-ink)",
                         }}
                       >
-                        {c.productType.name}
+                        {c.productType?.name || "—"}
                       </span>
                     </td>
                     <td className="font-semibold text-ink">

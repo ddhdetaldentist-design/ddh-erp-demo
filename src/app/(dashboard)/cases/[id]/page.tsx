@@ -6,6 +6,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
@@ -56,7 +58,7 @@ export default async function CaseDetailPage({
     <>
       <Topbar
         title={`حالة #${caseItem.caseCode}`}
-        subtitle={`د. ${caseItem.doctor.name} · المريض: ${caseItem.patientName}`}
+        subtitle={`د. ${caseItem.doctor?.name || "—"} · المريض: ${caseItem.patientName}`}
         action={
           <Link href="/cases" className="btn btn-ghost btn-sm">
             <ArrowRight className="w-4 h-4" />

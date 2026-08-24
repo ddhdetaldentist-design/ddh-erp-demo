@@ -18,7 +18,7 @@ interface Appointment {
   scheduledAt: Date;
   notes: string | null;
   isDone: boolean;
-  doctor: Doctor;
+  doctor?: Doctor | null;
   case: Case | null;
 }
 
@@ -261,7 +261,7 @@ export function AppointmentsClient({ initialAppointments, doctors, productTypes,
                 </div>
 
                 {/* Doctor name */}
-                <h3 className="font-bold text-ink text-sm leading-snug">د. {app.doctor.name}</h3>
+                <h3 className="font-bold text-ink text-sm leading-snug">د. {app.doctor?.name || "—"}</h3>
 
                 {/* Linked case */}
                 {app.case && (

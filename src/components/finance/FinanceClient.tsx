@@ -272,9 +272,9 @@ export function FinanceClient({ data: initialData }: { data: FinanceData }) {
               <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
                 <div>
                   <span className="font-mono text-xs font-bold text-primary">#{c.caseCode}</span>
-                  <span className="text-xs font-semibold text-ink mr-2">د. {c.doctor.name}</span>
+                  <span className="text-xs font-semibold text-ink mr-2">د. {c.doctor?.name || "—"}</span>
                   <p className="text-[11px] text-ink-muted">
-                    {c.patientName} · {c.productType.name}
+                    {c.patientName} · {c.productType?.name || "—"}
                   </p>
                 </div>
                 <div className="text-left">
@@ -305,8 +305,8 @@ export function FinanceClient({ data: initialData }: { data: FinanceData }) {
                   <p className="font-semibold text-xs text-ink">{exp.description}</p>
                   <div className="flex items-center gap-2 text-[11px] text-ink-muted">
                     <span>{new Date(exp.date).toLocaleDateString("ar-EG")}</span>
-                    {exp.employee && <span className="text-primary font-medium">· موظف: {exp.employee.name}</span>}
-                    {exp.doctor && <span className="text-purple-600 font-medium">· طبيب: {exp.doctor.name}</span>}
+                    {exp.employee?.name && <span className="text-primary font-medium">· موظف: {exp.employee.name}</span>}
+                    {exp.doctor?.name && <span className="text-purple-600 font-medium">· طبيب: {exp.doctor.name}</span>}
                   </div>
                 </div>
                 <span className="font-bold text-sm text-red-600">{formatCurrency(exp.amount)}</span>

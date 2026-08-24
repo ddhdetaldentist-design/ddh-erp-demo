@@ -6,6 +6,7 @@ import { Receipt } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "الملخص المالي" };
 
 async function getFinanceSummaryData() {
@@ -109,9 +110,10 @@ async function getFinanceSummaryData() {
   const byCourier: Record<string, { name: string; amount: number; count: number }> = {};
 
   for (const r of monthlyRemittances) {
-    const cId = r.employee.id;
+    const cId = r.employee?.id;
+    if (!cId) continue;
     if (!byCourier[cId]) {
-      byCourier[cId] = { name: r.employee.name, amount: 0, count: 0 };
+      byCourier[cId] = { name: r.employee?.name || "موظف غير محدد", amount: 0, count: 0 };
     }
     byCourier[cId].amount += r.amount;
     byCourier[cId].count += 1;

@@ -40,8 +40,8 @@ interface CaseItem {
   units: number;
   pricePerUnit: number;
   color: string | null;
-  doctor: { name: string };
-  productType: { name: string };
+  doctor?: { name: string } | null;
+  productType?: { name: string } | null;
 }
 
 interface Expense {
@@ -60,14 +60,15 @@ interface ReportsClientProps {
   allExpenses: Expense[];
 }
 
-export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientProps) {
+export function ReportsClient({ doctors = [], allCases = [], allExpenses = [] }: ReportsClientProps) {
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedDoctorId, setSelectedDoctorId] = useState<string>("");
   const [generatingPDF, setGeneratingPDF] = useState(false);
 
   // Filter Cases by selected Month, Year, and Doctor
-  const filteredCases = allCases.filter((c) => {
+  const filteredCases = (allCases || []).filter((c) => {
+    if (!c) return false;
     const date = new Date(c.receivedAt);
     const matchMonth = selectedMonth === 0 || date.getMonth() + 1 === selectedMonth;
     const matchYear = date.getFullYear() === selectedYear;
@@ -76,24 +77,29 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
   });
 
   // Filter Expenses by selected Month & Year
-  const filteredExpenses = allExpenses.filter((e) => {
+  const filteredExpenses = (allExpenses || []).filter((e) => {
+    if (!e) return false;
     const matchMonth = selectedMonth === 0 || e.month === selectedMonth;
     const matchYear = e.year === selectedYear;
     return matchMonth && matchYear;
   });
 
   // Calculated totals
-  const totalSales = filteredCases.reduce((s, c) => s + c.totalAmount, 0);
-  const totalCollected = filteredCases.reduce((s, c) => s + c.collected, 0);
-  const totalRemaining = filteredCases.reduce((s, c) => s + c.remaining, 0);
-  const totalExpenses = filteredExpenses.reduce((s, e) => s + e.amount, 0);
+  const totalSales = filteredCases.reduce((s, c) => s + (c?.totalAmount || 0), 0);
+  const totalCollected = filteredCases.reduce((s, c) => s + (c?.collected || 0), 0);
+  const totalRemaining = filteredCases.reduce((s, c) => s + (c?.remaining || 0), 0);
+  const totalExpenses = filteredExpenses.reduce((s, e) => s + (e?.amount || 0), 0);
   const netProfit = totalCollected - totalExpenses;
 
-  const selectedDoctorObj = doctors.find((d) => d.id === selectedDoctorId);
+  const selectedDoctorObj = (doctors || []).find((d) => d?.id === selectedDoctorId);
 
   // Build shared PDF props
   const pdfProps = {
-    cases: filteredCases,
+    cases: filteredCases.map((c) => ({
+      ...c,
+      doctor: c.doctor || { name: "—" },
+      productType: c.productType || { name: "—" },
+    })),
     expenses: filteredExpenses,
     month: selectedMonth,
     year: selectedYear,
@@ -120,7 +126,7 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
     setGeneratingPDF(true);
     try {
       await downloadDoctorInvoicePDF({
-        doctorName: selectedDoctorObj.name,
+        doctorName: selectedDoctorObj.name || "",
         clinicName: selectedDoctorObj.clinicName,
         area: selectedDoctorObj.area,
         cases: filteredCases.filter(Boolean).map((c) => ({
@@ -130,7 +136,7 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
           units: c.units || 1,
           pricePerUnit: c.pricePerUnit || 0,
           color: c.color || null,
-          productType: c.productType || { name: "-" },
+          productType: c.productType ? { name: c.productType.name || "-" } : { name: "-" },
         })),
         month: selectedMonth,
         year: selectedYear,
@@ -146,7 +152,7 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
     if (!selectedDoctorObj) return;
     setGeneratingPDF(true);
     try {
-      await downloadReportPDF({ ...pdfProps, doctorName: selectedDoctorObj.name });
+      await downloadReportPDF({ ...pdfProps, doctorName: selectedDoctorObj.name || "" });
     } finally {
       setGeneratingPDF(false);
     }
@@ -158,9 +164,9 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
     const dataToExport = filteredCases.map((c) => ({
       "كود الحالة": c.caseCode,
       "تاريخ الاستلام": formatDate(c.receivedAt),
-      "الدكتور": c.doctor.name,
+      "الدكتور": c.doctor?.name || "—",
       "اسم المريض": c.patientName,
-      "نوع التركيبة": c.productType.name,
+      "نوع التركيبة": c.productType?.name || "—",
       "الإجمالي (جم)": c.totalAmount,
       "المدفوع (جم)": c.collected,
       "المتبقي (جم)": c.remaining,
@@ -181,7 +187,7 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
       "كود الحالة": c.caseCode,
       "تاريخ الاستلام": formatDate(c.receivedAt),
       "اسم المريض": c.patientName,
-      "نوع التركيبة": c.productType.name,
+      "نوع التركيبة": c.productType?.name || "—",
       "الإجمالي (جم)": c.totalAmount,
       "المدفوع (جم)": c.collected,
       "المتبقي (جم)": c.remaining,
@@ -190,8 +196,8 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, `كشف_حساب_د_${selectedDoctorObj.name}`);
-    XLSX.writeFile(wb, `DDH_Statement_Dr_${selectedDoctorObj.name}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, `كشف_حساب_د_${selectedDoctorObj.name || "طبيب"}`);
+    XLSX.writeFile(wb, `DDH_Statement_Dr_${selectedDoctorObj.name || "طبيب"}.xlsx`);
   };
 
   return (
@@ -244,9 +250,9 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
               style={{ minWidth: "200px", height: "38px" }}
             >
               <option value="">كل الأطباء</option>
-              {doctors.map((d) => (
+              {(doctors || []).filter(Boolean).map((d) => (
                 <option key={d.id} value={d.id}>
-                  د. {d.name}
+                  د. {d?.name || "—"}
                 </option>
               ))}
             </select>
@@ -315,7 +321,7 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
                 <Stethoscope className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-ink text-base">كشف حساب تفصيلي: د. {selectedDoctorObj.name}</h3>
+                <h3 className="font-bold text-ink text-base">كشف حساب تفصيلي: د. {selectedDoctorObj?.name || "—"}</h3>
                 <p className="text-xs text-ink-muted">
                   {selectedDoctorObj.clinicName || "عيادة"} {selectedDoctorObj.area ? `(${selectedDoctorObj.area})` : ""}
                 </p>
@@ -377,11 +383,11 @@ export function ReportsClient({ doctors, allCases, allExpenses }: ReportsClientP
                   <tr key={c.id}>
                     <td className="font-mono font-bold text-primary">#{c.caseCode}</td>
                     <td className="text-xs text-ink-muted">{formatDate(c.receivedAt)}</td>
-                    <td className="font-semibold text-ink">{c.doctor.name}</td>
+                    <td className="font-semibold text-ink">{c.doctor?.name || "—"}</td>
                     <td className="text-ink-muted">{c.patientName}</td>
                     <td>
                       <span className="badge" style={{ background: "var(--color-canvas)", color: "var(--color-ink)" }}>
-                        {c.productType.name}
+                        {c.productType?.name || "—"}
                       </span>
                     </td>
                     <td className="font-semibold text-ink">{formatCurrency(c.totalAmount)}</td>

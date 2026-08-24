@@ -395,11 +395,11 @@ export function CaseDetailClient({ caseItem: initialData, doctors, productTypes,
             </span>
           </div>
           <h2 className="text-xl font-bold text-ink">
-            د. {data.doctor.name} {data.doctor.area ? `(${data.doctor.area})` : ""}
+            د. {data.doctor?.name || "—"} {data.doctor?.area ? `(${data.doctor.area})` : ""}
           </h2>
           <p className="text-sm text-ink-muted">
             اسم الحالة: <strong className="text-ink">{data.patientName}</strong> · التركيبة:{" "}
-            <strong className="text-ink">{data.productType.name}</strong>
+            <strong className="text-ink">{data.productType?.name || "—"}</strong>
           </p>
         </div>
 
@@ -517,7 +517,7 @@ export function CaseDetailClient({ caseItem: initialData, doctors, productTypes,
               </div>
               <div>
                 <span className="label">الدكتور</span>
-                <span className="font-semibold text-ink">{data.doctor.name}</span>
+                <span className="font-semibold text-ink">{data.doctor?.name || "—"}</span>
               </div>
               <div>
                 <span className="label">اسم المريض</span>
@@ -525,7 +525,7 @@ export function CaseDetailClient({ caseItem: initialData, doctors, productTypes,
               </div>
               <div>
                 <span className="label">نوع التركيبة</span>
-                <span className="font-semibold text-ink">{data.productType.name}</span>
+                <span className="font-semibold text-ink">{data.productType?.name || "—"}</span>
               </div>
               <div>
                 <span className="label">اللون</span>
@@ -655,7 +655,7 @@ export function CaseDetailClient({ caseItem: initialData, doctors, productTypes,
                               {pm.label}
                             </span>
                           </div>
-                          {p.courier && (
+                          {p.courier?.name && (
                             <p className="text-[11px] text-primary font-medium">المندوب: {p.courier.name}</p>
                           )}
                           {p.note && <p className="text-[11px] text-ink-muted">{p.note}</p>}

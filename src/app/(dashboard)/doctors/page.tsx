@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { DoctorsClient } from "@/components/doctors/DoctorsClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "الأطباء" };
 
 async function getDoctorsData() {
